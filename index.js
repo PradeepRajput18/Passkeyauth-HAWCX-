@@ -36,6 +36,10 @@ app.post('/register', (req, res) => {
 })
 
 
+app.post('/register-passkey',async (req,res)=>{
+    
+})
+
 
 
 
