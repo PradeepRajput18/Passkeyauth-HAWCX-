@@ -7,8 +7,46 @@
 </head>
 <body>
     <h1>Hey your profile has been created so now create a passkey!!!!</h1>
-    <button></button>
+    <button id="passkey-popup">Register Passkey auth</button>
 
+
+
+    <!-- using cdn for this -->
+    <script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.umd.min.js"></script>
+
+
+    <script>
+        const passkeyPopup = document.getElementById('passkey-popup');
+
+        passkeyPopup.addEventListener('click', async (e) => {
+            
+            const url = new URL(window.location);  // here as we are passing user data in the url so we are bringing userid from there
+            const userId = url.searchParams.get('userId');
+            console.log(userId);
+            
+            
+
+            const response = await fetch('http://localhost:3000/register-passkey', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userId })
+            })
+
+
+            const passkeychallenge = await response.json();
+            const {options} = passkeychallenge    // getting server passkey challegen 
+
+            // package code to get auth 
+
+            const auth = await SimpleWebAuthnBrowser.startAuthentication(options)
+
+            console.log(auth);
+            
+            
+        })
+    </script>
 
 </body>
 </html>
