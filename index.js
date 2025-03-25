@@ -18,6 +18,14 @@ const app = express();
 app.use(express.static('./public'))
 app.use(express.json())
 
+const cors = require('cors');
+app.use(cors({ 
+  origin: 'http://localhost:3000',
+  credentials: true 
+}));
+
+
+
 // States
 const userStore = {}
 const challengeStore = {}
@@ -96,27 +104,36 @@ app.post('/login-challenge', async (req, res) => {
     return res.json({ options: opts })
 })
 
+// Add this route before app.listen()
+app.post('/user', (req, res) => {
+    const { userId } = req.body;
+    if (!userStore[userId]) return res.status(404).json({ error: 'User not found!' });
 
-app.post('/login-verify', async (req, res) => {
-    const { userId, cred }  = req.body
+    return res.json(userStore[userId]);
+});
 
-    if (!userStore[userId]) return res.status(404).json({ error: 'user not found!' })
-    const user = userStore[userId]
-    const challenge = challengeStore[userId]
 
-    const result = await verifyAuthenticationResponse({
-        expectedChallenge: challenge,
-        expectedOrigin: 'http://localhost:3000',
-        expectedRPID: 'localhost',
-        response: cred,
-        authenticator: user.passkey
-    })
+// app.post('/login-verify', async (req, res) => {
+//     const { userId, cred }  = req.body
 
-    if (!result.verified) return res.json({ error: 'something went wrong' })
+//     if (!userStore[userId]) return res.status(404).json({ error: 'user not found!' })
+//     const user = userStore[userId]
+//     const challenge = challengeStore[userId]
+
+//     const result = await verifyAuthenticationResponse({
+//         expectedChallenge: challenge,
+//         expectedOrigin: 'http://localhost:3000',
+//         expectedRPID: 'localhost',
+//         response: cred,
+//         authenticator: user.passkey
+//     })
+
+//     if (!result.verified) return res.json({ error: 'something went wrong' })
     
-    // Login the user: Session, Cookies, JWT
-    return res.json({ success: true, userId })
-})
+//     // Login the user: Session, Cookies, JWT
+//     return res.json({ success: true, userId })
+// })
+
 
 
 app.listen(PORT, () => console.log(`Server started on PORT:${PORT}`))

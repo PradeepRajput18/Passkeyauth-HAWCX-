@@ -1,48 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login</title>
-</head>
-<body>
+  </head>
+  <body>
     <form id="login-form">
-        <input type="text" placeholder="userId" id="userId" />
-        <button type="submit">Login with Passkey</button>
+      <h2>Login</h2>
+        <label for="userId">User ID</label>
+        <input type="text" placeholder="Enter your user ID" id="userId"/>
+      <button type="submit">Login with Passkey</button>
     </form>
 
     <script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.umd.min.js"></script>
     <script>
-         const form = document.getElementById('login-form');
-         const userIdField = document.getElementById('userId')
+      const form = document.getElementById("login-form");
+      const userIdField = document.getElementById("userId");
 
-         form.addEventListener('submit', async e => {
-            e.preventDefault()
-            const userId = userIdField.value;
-            
-            const response = await fetch('/login-challenge', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ userId })
-            })
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const userId = userIdField.value;
 
-            const challengeResult = await response.json()
-            const { options } = challengeResult // Server side challenge
+        const response = await fetch("/login-challenge", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userId }),
+        });
 
-            const authenticationResult = await SimpleWebAuthnBrowser.startAuthentication(options)
-            console.log(authenticationResult)
+        const challengeResult = await response.json();
+        const { options } = challengeResult; // Server side challenge
 
-            await fetch('/login-verify', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ userId, cred: authenticationResult })
-            })
-         })
+        const authenticationResult =
+          await SimpleWebAuthnBrowser.startAuthentication(options);
+        console.log(authenticationResult);
 
+
+        // const data = await fetch("/user", {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        //   body: JSON.stringify({ userId }),
+        // });
+
+        // console.log(data);
+        
+
+        if(authenticationResult){
+            var data = userId;
+            localStorage.setItem('transferredData', data);
+            window.location.href = "email.html";
+        }
+
+      });
     </script>
-</body>
+  </body>
 </html>
