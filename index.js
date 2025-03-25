@@ -31,12 +31,13 @@ const userStore = {}
 const challengeStore = {}
 
 app.post('/register', (req, res) => {
-    const { username, password } = req.body
+    const { username, email ,password } = req.body
     const id = `user_${Date.now()}`
 
     const user = {
         id,
         username,
+        email,
         password
     }
 

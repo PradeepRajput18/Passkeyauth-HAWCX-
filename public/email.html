@@ -26,6 +26,7 @@
 
                     if (userData && userData.username) {
                         document.body.innerHTML += `<p>Hi Mister ${userData.username}</p>`;
+                        document.body.innerHTML += `<p>email sent to this registered email id ${userData.email}</p>`;
                     } else {
                         document.body.innerHTML += `<p>User data not found</p>`;
                     }

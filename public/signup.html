@@ -10,6 +10,7 @@
     <!-- user form user will submit the form -->
     <form id="register-form">
         <input type="text" placeholder="username" id="username" />
+        <input type="email" placeholder="email" id="email" />
         <input type="password" placeholder="password" id="password" />
         <button type="submit">Register</button>
     </form>
@@ -21,6 +22,7 @@
 
         // taking form inputs
         const usernameField = document.getElementById('username')
+        const emailField = document.getElementById('email')
         const passwordField = document.getElementById('password')
 
         form.addEventListener('submit', async e => {
@@ -33,6 +35,7 @@
                 },
                 body: JSON.stringify({ 
                     username: usernameField.value, 
+                    email: emailField.value, 
                     password: passwordField.value
                 })
             })
