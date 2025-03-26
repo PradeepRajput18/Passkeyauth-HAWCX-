@@ -26,10 +26,12 @@ app.use(cors({
 
 
 
-// States
-const userStore = {}
-const challengeStore = {}
+//  user details are stored like ids in Userdata field
+const userData = {}
+const passkeyData = {} // storing userid passkeys
 
+
+// storing userid passkeys
 app.post('/register', (req, res) => {
     const { username, email ,password } = req.body
     const id = `user_${Date.now()}`
@@ -40,100 +42,72 @@ app.post('/register', (req, res) => {
         email,
         password
     }
-
-    userStore[id] = user
-
-    console.log(`Register successfull`, userStore[id])
-
+    userData[id] = user
+    console.log(`User details taken and stored`, userData[id])
     return res.json({ id })
 
 })
 
+
+// to get passkey from new user 
 app.post('/register-challenge', async (req, res) => {
     const { userId } = req.body
 
-    if (!userStore[userId]) return res.status(404).json({ error: 'user not found!' })
+    if (!userData[userId]) return res.status(404).json({ error: 'user not found!' })
 
-    const user = userStore[userId]
+    const user = userData[userId]
 
-    const challengePayload = await generateRegistrationOptions({
-        rpID: 'localhost',
+    const passkeyinfo = await generateRegistrationOptions({
+        rpID: 'localhost',  // mentioning on what frontend application is running
         rpName: 'My Localhost Machine',
         attestationType: 'none',
         userName: user.username,
         timeout: 30_000,
     })
 
-    challengeStore[userId] = challengePayload.challenge
-
-    return res.json({ options: challengePayload })
-
+    passkeyData[userId] = passkeyinfo.challenge
+    return res.json({ options: passkeyinfo })
 })
 
 app.post('/register-verify', async (req, res) => {
     const { userId, cred }  = req.body
-    
-    if (!userStore[userId]) return res.status(404).json({ error: 'user not found!' })
-
-    const user = userStore[userId]
-    const challenge = challengeStore[userId]
-
+    if (!userData[userId]) return res.status(404).json({ error: 'user not found!' })
+    const user = userData[userId]
+    const passkey = passkeyData[userId]
     const verificationResult = await verifyRegistrationResponse({
-        expectedChallenge: challenge,
+        expectedChallenge: passkey,
         expectedOrigin: 'http://localhost:3000',
         expectedRPID: 'localhost',
         response: cred,
     })
 
     if (!verificationResult.verified) return res.json({ error: 'could not verify' });
-    userStore[userId].passkey = verificationResult.registrationInfo
+    user.passkey = verificationResult.registrationInfo
 
     return res.json({ verified: true })
 
 })
 
+
+// to veryfy existing user 
 app.post('/login-challenge', async (req, res) => {
     const { userId } = req.body
-    if (!userStore[userId]) return res.status(404).json({ error: 'user not found!' })
+    if (!userData[userId]) return res.status(404).json({ error: 'user not found!' })
     
     const opts = await generateAuthenticationOptions({
         rpID: 'localhost',
     })
-
-    challengeStore[userId] = opts.challenge
-
+    passkeyData[userId] = opts.challenge
     return res.json({ options: opts })
 })
 
-// Add this route before app.listen()
+// Getting user data
 app.post('/user', (req, res) => {
     const { userId } = req.body;
-    if (!userStore[userId]) return res.status(404).json({ error: 'User not found!' });
+    if (!userData[userId]) return res.status(404).json({ error: 'User not found!' });
 
-    return res.json(userStore[userId]);
+    return res.json(userData[userId]);
 });
-
-
-// app.post('/login-verify', async (req, res) => {
-//     const { userId, cred }  = req.body
-
-//     if (!userStore[userId]) return res.status(404).json({ error: 'user not found!' })
-//     const user = userStore[userId]
-//     const challenge = challengeStore[userId]
-
-//     const result = await verifyAuthenticationResponse({
-//         expectedChallenge: challenge,
-//         expectedOrigin: 'http://localhost:3000',
-//         expectedRPID: 'localhost',
-//         response: cred,
-//         authenticator: user.passkey
-//     })
-
-//     if (!result.verified) return res.json({ error: 'something went wrong' })
-    
-//     // Login the user: Session, Cookies, JWT
-//     return res.json({ success: true, userId })
-// })
 
 
 

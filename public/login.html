@@ -10,7 +10,7 @@
       <h2>Login</h2>
         <label for="userId">User ID</label>
         <input type="text" placeholder="Enter your user ID" id="userId"/>
-      <button type="submit">Login with Passkey</button>
+      <button type="submit">Login</button>
     </form>
 
     <script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.umd.min.js"></script>
@@ -30,25 +30,14 @@
           body: JSON.stringify({ userId }),
         });
 
-        const challengeResult = await response.json();
-        const { options } = challengeResult; // Server side challenge
+        const passkeyinfo = await response.json();
+        const { options } = passkeyinfo; // Server side challenge
 
         const authenticationResult =
           await SimpleWebAuthnBrowser.startAuthentication(options);
         console.log(authenticationResult);
-
-
-        // const data = await fetch("/user", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        //   body: JSON.stringify({ userId }),
-        // });
-
-        // console.log(data);
         
-
+        // transfering user details to email.html
         if(authenticationResult){
             var data = userId;
             localStorage.setItem('transferredData', data);
